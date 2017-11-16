@@ -1,0 +1,1525 @@
+# APRES INSTALLATION #
+GET  /
+
+# SLIDE : En PROD
+### Configuration machine
+### Architecture du cluster en fct du besoin
+
+
+
+################################
+#######  4_demar_mqs.sh ###########
+###    INDEX AUTOCREATION   ###
+################################
+DELETE /demar_4_mqs
+
+PUT demar_4_mqs/books/1
+{
+  "title" : "War and Peace",
+  "author" : "Leo Tolstoï",
+  "translator" : "Constance Garnet"
+}
+
+# TEMPLATE
+###############
+# PUT /{index}/{type}/{id}
+# {
+#   "field_name" : "field_value"  
+# }
+###############
+
+GET demar_4_mqs
+
+# #action.auto_create_index: true
+
+################################
+####### 5_demar_mqs.sh #########
+###    CUSTOM INDEX          ###
+################################
+
+DELETE demar_5_mqs
+
+PUT /demar_5_mqs
+{
+  "settings": 
+  {
+
+  },
+  "mappings": 
+  {
+
+  }
+}
+
+
+# TEMPLATE
+###############
+# PUT /{index}
+# {
+#   BODY  
+# }
+###############
+
+#PUT /{index}/{type}/{id}
+#{
+#   "FIELD_NAME": "FIELD_VALUE",
+#   ...
+#}
+
+
+PUT /demar_5_mqs/books/1
+{
+   "title": "War and Peace",
+   "author": "Leo Tolstoy",
+   "translator": "Constance Garnett"
+}
+
+PUT /demar_5_mqs/books/2
+{
+   "title": "War and Peace",
+   "author": "Leo Tolstoy",
+   "translator": "Louise Maude"
+}
+
+PUT /demar_5_mqs/books/3
+{
+   "title": "War and Peace",
+   "author": "Leo Tolstoy",
+   "translator": "Vladimir Ilitch Oulianov"
+}
+
+PUT /demar_5_mqs/books/4
+{
+   "title": "Le vieil homme et la mer",
+   "author": "Ernest Hemingway",
+   "translator": "John the translator"
+}
+
+
+GET /demar_5_mqs
+
+
+
+GET /demar_5_mqs/books/_search
+{
+}
+
+
+
+GET /demar_5_mqs/books/_search
+{
+  "from": 0,
+  "size" : 1
+}
+
+
+POST /demar_*/books/_search
+{
+  "from": 0,
+  "size" : 4
+}
+
+
+
+POST /demar_5_mqs/books/_search?explain
+{
+  "query": 
+  {
+    "match": {
+      "translator": "vladimir"
+    }
+  }
+}
+
+
+# TEMPLATE
+###############
+# GET /{index}/{type}/_search
+# {
+#   BODY
+# }
+###############
+
+
+###################################
+####### 6_create_template_1.sh ####
+#######      TEMPLATE          ####
+###################################
+
+DELETE /demar_6_mqs
+DELETE /_template/template_devoxx_ma 
+
+
+PUT /_template/template_devoxx_ma
+{
+  "template": "demar_*",
+  "settings": 
+  {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  }
+}
+
+
+
+PUT /demar_6_mqs
+{
+  "mappings" : 
+  {
+    "books" : 
+    {
+      "properties" : 
+      {
+        "title" : {"type": "text"}
+      }
+    }
+  }
+}
+
+GET demar_6_mqs
+
+
+### SLIDE  ###
+#Structured search : Filtres et Queries
+
+
+################################
+####### 7_1_demar_filter_1.sh ####
+################################
+DELETE /demar_filter_1
+
+#POST /{index}/{type}/_bulk
+# {
+# { "index": { "_id": <id> }}
+# { "FIELD1" : value1, "field2" : "value2" }
+# index, create, update, delete
+# }
+
+POST /demar_filter_1/products/_bulk
+{ "index": { "_id": 1 }}
+{ "price" : 10.0, "productID" : "XHDK-A-1293-#fJ3" }
+{ "index": { "_id": 2 }}
+{ "price" : 20, "productID" : "KDKE-B-9947-#kL5" }
+{ "index": { "_id": 3 }}
+{ "price" : 30, "productID" : "JODL-X-1937-#pV7" }
+{ "index": { "_id": 4 }}
+{ "price" : 30, "productID" : "QQPX-R-3956-#aD8" }
+
+
+
+GET /demar_filter_1/_search
+{
+  "query": 
+  {
+      "bool": 
+      {
+        "filter": 
+        [
+           {"term" : {"productID" : "XHDK-A-1293-#fJ3"}}
+        ]
+      }
+  }
+} 
+
+
+
+GET /demar_filter_1/_analyze
+{
+  "field" : "productID",  
+  "text" : "XHDK-A-1293-#fJ3"
+}
+
+
+GET /demar_filter_1
+
+
+##### 
+## 2
+
+################################
+####### 7_2_demar_filter_2.sh ####
+################################
+DELETE /demar_filter_2
+
+
+PUT /demar_filter_2
+{
+  "mappings": 
+  {
+    "products" : 
+    {
+       "properties": 
+       {
+         "price" : {"type": "double"},
+         "productID" : {"type": "keyword"}
+       }   
+    }
+  }
+}
+
+
+POST /demar_filter_2/products/_bulk
+{ "index": { "_id": 1 }}
+{ "price" : 10, "productID" : "XHDK-A-1293-#fJ3" }
+{ "index": { "_id": 2 }}
+{ "price" : 20, "productID" : "KDKE-B-9947-#kL5" }
+{ "index": { "_id": 3 }}
+{ "price" : 30, "productID" : "JODL-X-1937-#pV7" }
+{ "index": { "_id": 4 }}
+{ "price" : 30, "productID" : "QQPX-R-3956-#aD8" }
+
+
+GET /demar_filter_2
+
+GET /demar_filter_2/_search
+{
+  "query": 
+  {
+      "bool": 
+      {
+        "filter": 
+        [
+           {"term" : {"productID" : "XHDK-A-1293-#fJ3"}}
+        ]
+      }
+  }
+} 
+
+
+GET /demar_filter_2/_analyze
+{
+  "field" : "productID",  
+  "text" : "XHDK-A-1293-#fJ3"
+}
+
+# The keyword tokenizer emits the original 
+# input string as a #single unchanged token.
+
+
+GET /demar_filter_1/_search
+{
+  "query": 
+  {
+      "bool": 
+      {
+        "must": 
+        [
+          {"match_all": {}}
+        ],
+        "filter": 
+        [
+           {"term" : {"productID" : "XHDK-A-1293-#fJ3"}}
+        ]
+      }
+  }
+} 
+
+
+
+###################################
+########   MATCH QUERY     ########
+########   RELEVANCE     ########
+###################################
+
+### 10_1_pm_mp1.sh ###
+
+DELETE /demar_pm_mp1
+
+PUT /demar_pm_mp1
+{
+  "settings": 
+  {
+    "index" :
+    {
+      "similarity" : 
+      {
+        "default" : 
+        {
+          "type" : "classic"
+        }
+      }
+    }
+  }, 
+   "mappings" :
+   {
+      "my_type" : 
+      {
+          "properties": 
+          {
+              "title": 
+              {
+                  "type": "text"
+              }
+          }   
+      }
+   }
+}
+
+
+POST /demar_pm_mp1/my_type/_bulk
+{ "index": { "_id": 1 }}
+{ "title": "The quick brown fox" }
+{ "index": { "_id": 2 }}
+{ "title": "The quick brown fox jumps over the lazy dog" }
+{ "index": { "_id": 3 }}
+{ "title": "The quick brown fox jumps over the quick dog" }
+{ "index": { "_id": 4 }}
+{ "title": "Brown fox brown dog" }
+
+
+GET /demar_pm_mp1/my_type/_search?explain
+{
+  "query": 
+  {
+    "match": {
+      "title": "QUICK!"
+    }
+  }
+}
+
+#idf, computed as log((docCount+1)/(docFreq+1)) + 1 from ...
+
+
+################################
+####### 10_2_demar_pm_mp1.sh #######
+################################
+DELETE /demar_pm_mp2
+
+PUT /demar_pm_mp2
+{
+   "mappings" :
+   {
+      "my_type" : 
+      {
+          "properties": 
+          {
+              "title": 
+              {
+                  "type": "text"
+              }
+          }   
+      }
+   }
+}
+
+POST /demar_pm_mp2/my_type/_bulk
+{ "index": { "_id": 1 }}
+{ "title": "The quick brown fox" }
+{ "index": { "_id": 2 }}
+{ "title": "The quick brown fox jumps over the lazy dog" }
+{ "index": { "_id": 3 }}
+{ "title": "The quick brown fox jumps over the quick dog" }
+{ "index": { "_id": 4 }}
+{ "title": "Brown fox brown dog" }
+
+
+
+
+GET /demar_pm_mp2/my_type/_search?explain
+{
+  "query": 
+  {
+    "match": {
+      "title": "QUICK!"
+    }
+  }
+}
+
+# idf, computed as log(1 + (docCount - docFreq + 0.5) / (docFreq # + 0.5)) from ...
+
+
+
+# SLIDE 
+# 1. Check the field type.
+# The title field is a full-text (analyzed) string field, which means that the query string should be analyzed too.
+
+#2. Analyze the query string.
+#The query string QUICK! is passed through the standard analyzer, which results in the single term quick. Because we have a just a single term, the match query can be executed as a single low-level term query.
+
+#3. Find matching docs. 
+#The term query looks up quick in the inverted index and retrieves the list of documents that contain that term—in this case, documents 1, 2, and 3.
+
+#4. Score each doc.
+#The term query calculates the relevance _score for each matching document, by combining the term frequency (how often quick appears in the title field of each document), with the inverse document frequency (how often quick appears in the title field in all documents in the index), and the length of each field
+
+#######################
+# Relevance is broken #
+#######################
+DELETE /pm_mp3
+
+PUT /pm_mp3
+{
+  "settings": 
+  {
+    "index" : 
+    {
+      "similarity" : 
+      {
+        "default" : 
+        {
+          "type" : "classic"
+        }
+      }
+    }
+  }, 
+   "mappings" :
+   {
+      "my_type" : 
+      {
+          "properties": 
+          {
+              "title": 
+              {
+                  "type": "text"
+              }
+          }   
+      }
+   }
+}
+
+POST /pm_mp3/my_type/_bulk
+{ "index": { "_id": 1 }}
+{ "title": "The quick brown fox" }
+{ "index": { "_id": 2 }}
+{ "title": "The quick brown fox jumps over the lazy dog" }
+{ "index": { "_id": 3 }}
+{ "title": "The quick brown fox jumps over the quick dog" }
+{ "index": { "_id": 4 }}
+{ "title": "Brown fox brown dog" }
+
+
+GET /pm_mp3/my_type/_search
+{
+  "query": 
+  {
+    "match": {
+      "title": 
+      {
+        "query": "BROWN DOG",
+        "operator": "and"
+      }
+    }
+  }
+}
+
+
+GET /pm_mp3/my_type/_search?search_type=dfs_query_then_fetch
+{
+  "query": 
+  {
+    "match": {
+      "title": 
+      {
+        "query": "BROWN DOG",
+        "operator": "and"
+      }
+    }
+  }
+}
+
+
+GET /demar_pm_mp1/my_type/_search?search_type=dfs_query_then_fetch
+{
+  "query": 
+  {
+    "match": {
+      "title": 
+      {
+        "query": "BROWN DOG",
+        "operator": "and"
+      }
+    }
+  }
+}
+
+GET /demar_pm_mp1/my_type/_search
+{
+  "query": 
+  {
+    "match": {
+      "title": 
+      {
+        "query": "BROWN DOG",
+        "operator": "and"
+      }
+    }
+  }
+}
+
+
+
+#########################################
+#### MULTIPLE QUERY STRINGS #############
+####   11_demar_mqs.sh      #############
+#########################################
+
+DELETE /demar_mqs
+
+PUT /demar_mqs
+{
+  "mappings": {
+    "books": {
+      "properties": {
+        "title": {
+          "type": "text"
+        },
+        "author": {
+          "type": "text"
+        },
+        "translator": {
+          "type": "text"
+        }
+      }
+    }
+  }
+}
+
+POST /demar_mqs/books/_bulk
+{ "index": { "_id": 1 }}
+{ "title": "War and Peace", "author" : "Leo Tolstoï", "translator" : "Constance Garnett"}
+{ "index": { "_id": 2 }}
+{ "title": "War and Peace", "author" : "Leo Tolstoï", "translator" : "Louise Maude"}
+{ "index": { "_id": 3 }}
+{ "title": "War and Peace", "author" : "Leo Tolstoï", "translator" : "Vladimir Ilitch Oulianov"}
+{ "index": { "_id": 4 }}
+{ "title": "Le vieil homme et la mer", "author" : "Ernest Hemingway", "translator" : "John the translator"}
+
+
+## "title": "war and peace"
+## "author": "leon tolstoy"
+GET /demar_mqs/books/_search
+{
+  "query": 
+  {
+    "bool": 
+    {
+      "should": 
+      [
+        {"match": {"title": "war and peace"}},
+        {"match": {"author": "leon tolstoï"}}
+      ]
+    }
+  }
+}
+
+
+## "title": "war and peace"
+## "author": "leon tolstoy"
+### "translator" : "Constance Garnett"
+### "translator" : "Louise Maude"
+GET /demar_mqs/books/_search
+{
+
+}
+
+
+
+GET /demar_mqs/books/_search
+{
+   "query": 
+   {
+      "bool": 
+      {
+        "should": 
+        [
+          {
+            "match": 
+            {
+              "title": 
+              {
+                "query": "war and peace",
+                "boost" : 2
+              }
+            }
+          },
+          {
+            "match": 
+            {
+              "author": 
+              {
+                "query": "Leo Tolstoy",
+                "boost" : 2
+              }
+            }
+          },
+          {
+            "bool": 
+            {
+              "should": 
+              [
+                {"match": {"translator": "Constance Garnett"}},
+                {"match": {"translator": "Louise Maude"}}
+              ]
+            }
+          }
+          
+        ]
+      }  
+   }
+}
+
+
+
+#########################################
+########     BEST FIELDS    #############
+######## 12_demar_sqs_bf.sh #############
+#########################################
+DELETE /demar_sqs_bf
+
+
+PUT /demar_sqs_bf
+{
+  "mappings" : 
+  {
+    "bestfields" : 
+    {
+      "properties": 
+      {
+        "title" :{"type": "text"},
+        "body" : {"type": "text"}
+      }
+    }
+  }
+}
+
+
+PUT /demar_sqs_bf/bestfields/1
+{
+  "title" : "Quick brown rabbits",
+  "body" : "Brown rabbits are commonly seen."
+}
+
+
+PUT /demar_sqs_bf/bestfields/2
+{
+  "title" : "Keeping pets healthy",
+  "body" : "My quick brown fox eats rabbits on a regular basis."
+}
+
+
+## Look for "Brown fox" in title and body
+GET /demar_sqs_bf/bestfields/_search
+{
+  "query": 
+  {
+    "bool": 
+    {
+      "should": 
+      [
+        {"match": {"title": "brown fox"}},
+        {"match": {"body": "brown fox"}}        
+      ]
+    }
+  }
+}
+
+
+# DIS MAX Disjunction Max Query
+# dis_max query simply uses the _score 
+# from the single bestmatching clause.
+GET /demar_sqs_bf/bestfields/_search
+{
+  "query": 
+  {
+    "dis_max": {
+      "queries": 
+      [
+        {"match": {"title": "brown fox"}},
+        {"match": {"body": "brown fox"}}        
+      ]
+    }
+  }
+}
+
+# search for "Quick pets" 
+# without TIE_BREAKER
+# 
+GET /demar_sqs_bf/bestfields/_search
+{
+  "query": 
+  {
+    "dis_max": {
+      "queries": 
+      [
+        {"match": {"title": "Quick pets"}},
+        {"match": {"body": "Quick pets"}}        
+      ]
+    }
+  }
+}
+
+# WITH TIE BREAKER
+# REDUCES TIE BREAKER EFFECT
+# 0 => Like DIS_MAX
+# 1 => Without DIS_MAX
+GET /demar_sqs_bf/bestfields/_search
+{
+  "query": 
+  {
+    "dis_max": {
+      "tie_breaker": 0.3,
+      "queries": 
+      [
+        {"match": {"title": "Quick pets"}},
+        {"match": {"body": "Quick pets"}}        
+      ]
+    }
+  }
+}
+
+
+# LIKE BELOW BUT WITH A TIE_BREAKER = 1
+GET /demar_sqs_bf/bestfields/_search
+{
+  "query" : 
+  {
+    "bool": 
+    {
+      "should": 
+      [
+        {"match": {"title": "Quick pets"}},
+        {"match": {"body": "Quick pets"}}        
+      ]
+    }
+  }
+}
+
+
+
+
+# WHAT IF THERE IS MANY FIELDS ...
+# => multi_match Query
+GET /demar_sqs_bf/bestfields/_search
+{
+  "query": 
+  {
+    "multi_match": {
+      "query": "Quick pets",
+      "fields": ["title","body"],
+      "type": "best_fields",
+      "tie_breaker": 0.3
+    }  
+  }
+
+}
+
+# wildcards and boost
+GET /demar_sqs_bf/bestfields/_search
+{
+  "query": 
+  {
+    "multi_match": {
+      "query": "Quick Brown Fox",
+      "fields": []
+    }
+  }
+}
+
+
+
+####### MOST FIELDS #######
+#### 13_demar_msq_mf.sh ###
+DELETE  /demar_msq_mf
+
+PUT /demar_msq_mf
+{
+  "mappings": 
+  {
+    "mostfields" : 
+    {
+      "properties": 
+      {
+        "title" : 
+        {
+          "type": "text",
+          "analyzer": "english",
+          "fields": 
+          {
+            "std" : 
+            {
+              "type": "text",
+              "analyzer": "standard"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+PUT /demar_msq_mf/mostfields/1
+{ "title" : "My rabbit jumps" }
+
+PUT /demar_msq_mf/mostfields/2
+{ "title" : "Jumping jack rabbits" }
+
+
+GET /demar_msq_mf/mostfields/_search
+{
+  "query": 
+  {
+    "match": {
+      "title" : "jumping rabbits"
+    }
+  }
+}
+
+#analyze the searched string
+GET demar_msq_mf/_analyze
+{
+  "analyzer": "english",
+  "text" : "jumping rabbits"
+}
+
+
+
+GET /demar_msq_mf/mostfields/_search
+{
+  "query": 
+  {
+    "multi_match": {
+      "type": "most_fields", 
+      "query": "jumping rabbits",
+      "fields": ["title","title.std"]
+    }
+  }
+}
+
+
+# We are using the broad-matching title field to include 
+# as many documents as  possible  to increase recall
+# but we use the title.std field as a signal 
+# to push the most relevant results to the top.
+
+
+
+
+## FIELD CENTRIC QUERIES VS. TERM CENTRIC QUERIES ##
+## BEST_FIELDS AND MOST_FIELDS LOOK FOR THE BEST MATCHING FIELD ##
+
+
+#####################################
+######     CROSS FIELD          #####
+####### 14_demar_msq_cf1.sh #########
+#####################################
+DELETE /demar_msq_cf1
+
+PUT /demar_msq_cf1
+{
+  "mappings": 
+  {
+    "crossfields" : 
+    {
+      "properties": 
+      {
+        "street" : {"type": "text"},
+        "city": {"type": "text"},
+        "country": {"type": "text"},
+        "postcode": {"type": "text"}
+      }
+    }
+  }
+}
+
+PUT /demar_msq_cf1/crossfields/1
+{
+"street": "5 Poland Street",
+"city": "London",
+"country": "United Kingdom",
+"postcode": "W1V 3DG"
+}
+
+PUT /demar_msq_cf1/crossfields/2
+{
+"street": "5 Poland Street",
+"city": "Wrocslaw",
+"country": "Poland",
+"postcode": "WRF 435"
+}
+
+GET /demar_msq_cf1/_search
+{
+  "query": {
+    "bool": {
+      "should": [
+        {"match": {"street": "Poland Street W1V"}},
+        {"match": {"city": "Poland Street W1V"}},
+        {"match": {"country": "Poland Street W1V"}},
+        {"match": {"postcode": "Poland Street W1V"}}
+      ]
+    }
+  }
+}
+
+
+GET /demar_msq_cf1/_validate/query?explain&pretty=true
+{
+  "query": {
+    "bool": {
+      "should": [
+        {"match": {"street": "Poland Street W1V"}},
+        {"match": {"city": "Poland Street W1V"}},
+        {"match": {"country": "Poland Street W1V"}},
+        {"match": {"postcode": "Poland Street W1V"}}
+      ]
+    }
+  }
+}
+
+GET /demar_msq_cf1/_search
+{
+  "query": 
+  {
+    "multi_match": {
+      "type": "most_fields", 
+      "query": "Poland Street W1V",
+      "fields": ["street","city","country","postcode"]
+    }
+  }
+}
+
+
+GET /demar_msq_cf1/_validate/query?explain&pretty=true
+{
+  "query": 
+  {
+    "multi_match": {
+      "type": "most_fields", 
+      "query": "Poland Street W1V",
+      "fields": ["street","city","country","postcode"]
+    }
+  }
+}
+
+#Elasticsearch generates a separate match query for each field 
+#and then wraps these match queries in an outer bool query.
+
+#(city:poland city:street city:w1v) 
+#(country:poland country:street country:w1v) 
+#(postcode:poland postcode:street postcode:w1v) 
+#(street:poland street:street street:w1v)
+# You can see that a document matching just the word poland in two fields could score higher than a document matching poland and street in one field.
+
+
+
+GET /demar_msq_cf1/_search
+{
+  "query": 
+  {
+    "multi_match": {
+      "type": "most_fields", 
+      "operator" : "and",
+      "query": "Poland Street W1V",
+      "fields": ["street","city","country","postcode"]
+    }
+  }
+}
+
+
+GET /demar_msq_cf1/_validate/query?explain&pretty=true
+{
+  "query": 
+  {
+    "multi_match": {
+      "type": "most_fields", 
+      "operator" : "and",
+      "query": "Poland Street W1V",
+      "fields": ["street","city","country","postcode"]
+    }
+  }
+}
+
+#(+city:poland +city:street +city:w1v) 
+#(+country:poland +country:street +country:w1v) 
+#(+postcode:poland +postcode:street +postcode:w1v) 
+#(+street:poland +street:street +street:w1v)
+
+# In other words, using the and operator means that all words must exist in the same field, which is clearly wrong! It is unlikely that any documents would match this query.
+
+
+
+# DEMO : Custom _all Fields
+### 15_demar_msq_cf22.sh ###
+DELETE /demar_msq_cf22
+
+PUT /demar_msq_cf22
+{
+  "mappings": 
+  {
+    "identity" : 
+    {
+      "properties": 
+      {
+        "first_name": 
+        {
+           "type": "text",
+           "copy_to": "full_name"
+          
+        },
+        "last_name": 
+        {
+          "type": "text",
+           "copy_to": "full_name"
+          
+        },
+        "full_name": 
+        {
+          "type": "text"
+          
+        }        
+      }
+    }
+  }
+}
+
+PUT /demar_msq_cf22/identity/1
+{
+"first_name": "peter",
+"last_name": "smith"
+}
+
+PUT /demar_msq_cf22/identity/2
+{
+"first_name": "peter",
+"last_name": "pan"
+}
+
+
+GET /demar_msq_cf22/_search
+{
+  "query": {
+    "bool": {
+      "should": [
+        {"match": {"first_name": "peter smith"}},
+        {"match": {"last_name": "peter smith"}}
+      ]
+    }
+  }
+}
+
+GET /demar_msq_cf22/_search
+{
+  "query" : 
+  {
+    "match": {
+      "full_name": "peter smith"
+    }
+  }
+}
+
+
+
+GET /demar_msq_cf22/_search
+{
+  "query": 
+  {
+    "multi_match": {
+      "query": "peter smith",
+      "type": "cross_fields",
+      "fields": ["first_name","last_name"]
+    }
+  }
+}
+
+
+# DEMO : CROSS FIELDS
+GET /demar_msq_cf1/_validate/query?explain&pretty=true
+{
+  "query": 
+  {
+    "multi_match": {
+      "type": "cross_fields", 
+      "query": "Poland Street W1V",
+      "operator" : "and",      
+      "fields": ["street","city","country","postcode"]
+    }
+  }
+}
+#+blended(terms:[city:poland, country:poland, postcode:poland, street:poland]) 
+#+blended(terms:[city:street, country:street, postcode:street, street:street]) 
+#+blended(terms:[city:w1v, country:w1v, postcode:w1v, street:w1v])
+
+
+GET /demar_msq_cf1/_search
+{
+  "query": 
+  {
+    "multi_match": {
+      "type": "cross_fields", 
+      "query": "Poland Street W1V",
+      "operator" : "and",            
+      "fields": ["street","city","country","postcode"]
+    }
+  }
+}
+
+########################
+### PHRASE MATCHING ####
+########################
+DELETE /demar_pm_mp3
+
+PUT /demar_pm_mp3
+{
+   "mappings" :
+   {
+      "my_type" : 
+      {
+          "properties": 
+          {
+              "title": 
+              {
+                  "type": "text"
+              }
+          }   
+      }
+   }
+}
+
+POST /demar_pm_mp3/my_type/_bulk
+{ "index": { "_id": 1 }}
+{ "title": "The quick brown fox" }
+{ "index": { "_id": 2 }}
+{ "title": "The quick brown fox jumps over the lazy dog" }
+{ "index": { "_id": 3 }}
+{ "title": "The quick brown fox jumps over the quick dog" }
+{ "index": { "_id": 4 }}
+{ "title": "Brown fox brown dog" }
+
+
+GET /demar_pm_mp3/my_type/_search
+{
+  "query": 
+  {
+    "match_phrase": {
+      "title": "quick brown fox"
+    }
+  }
+}
+
+
+GET demar_pm_mp3/_analyze
+{
+  "field" : "title",
+  "text" : "quick brown fox",
+  "analyzer" : "standard"
+}
+
+# Positions can be stored in the inverted index, and position-aware queries like the match_phrase query can use them to match only documents that contain all the words in exactly the order specified, with no words in-between
+
+
+## Query-Time Search-as-You-Type
+### PHRASE PREFIX MATCHING ####
+## 17_demar_pm_qtsayt.sh 
+# demar_pm_qtsayt##
+DELETE /demar_pm_qtsayt
+
+PUT /demar_pm_qtsayt
+{
+  "mappings": 
+  {
+    "my_type" : 
+    {
+      "properties": 
+      {
+        "name" : 
+        {
+          "type": "text"
+        }
+      }
+    }
+  }
+}
+
+POST /demar_pm_qtsayt/my_type/_bulk
+{ "index": { "_id": 1 }}
+{ "title": "The quick brown fox" }
+{ "index": { "_id": 2 }}
+{ "title": "The quick brown fox jumps over the lazy dog" }
+{ "index": { "_id": 3 }}
+{ "title": "The quick brown fox jumps over the quick dog" }
+{ "index": { "_id": 4 }}
+{ "title": "Brown fox brown dog" }
+
+
+GET /demar_pm_qtsayt/my_type/_search
+{
+  "query": 
+  {
+    "match_phrase_prefix": {
+      "title": "quic"
+    }
+  }
+}
+
+
+
+## SLOP
+## make the word order and relative positions somewhat less rigid
+GET /demar_pm_qtsayt/my_type/_search
+{
+  "query": 
+  {
+    "match_phrase_prefix": {
+      "title": 
+      {
+        "query": "brown quick",
+         "slop" : 2
+      }
+    }
+  }
+}
+
+
+## However, it is always only the last word in the query string that is treated as a prefix.
+GET /demar_pm_qtsayt/my_type/_search
+{
+  "query": 
+  {
+    "match_phrase_prefix": {
+      "title": 
+      {
+        "query": "brow quick",
+         "slop" : 2
+      }
+    }
+  }
+}
+
+
+# The max_expansions parameter controls how many terms 
+# the prefix is allowed to match. It will find the first 
+# term starting with bl and keep collecting terms 
+# (in alphabetical order) until it either runs out of terms 
+# with prefix bl, or it has more terms than max_expansions.
+GET /demar_pm_qtsayt/my_type/_search
+{
+  "query": 
+  {
+    "match_phrase_prefix": {
+      "title": 
+      {
+        "query": "brown qu",
+         "slop" : 2,
+         "max_expansions": 50
+      }
+    }
+  }
+}
+
+
+
+
+## INDEX TIME OPTIMISATION ##
+#Preparing the Index
+##############################
+## 17_2_demar_pm_qtsayt2.sh ##
+##############################
+
+DELETE /demar_pm_itsayt2
+
+
+PUT  /demar_pm_itsayt2
+{
+  "settings": 
+  {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+    , "analysis": 
+    {
+      "filter": 
+      {
+        "autocomplete_filter" : 
+        {
+          "type" : "edge_ngram",
+          "min_gram" : 1,
+          "max_gram" : 20
+        }
+      },
+      "analyzer": 
+      {
+        "autocomplete_analyzer" : 
+        {
+          "type" : "custom",
+          "tokenizer" : "standard",
+          "filter" : ["lowercase","autocomplete_filter"]
+        }
+      }
+    }
+  },
+  "mappings": 
+  {
+    "my_type" : 
+    {
+      "properties": 
+      {
+        "name" :
+        {
+          "type": "text",
+          "analyzer": "autocomplete_analyzer"
+        }
+      }
+    }
+    
+  }  
+}
+
+
+POST /demar_pm_itsayt2/my_type/_bulk
+{ "index": { "_id": 1 }}
+{ "name": "Brown foxes" }
+{ "index": { "_id": 2 }}
+{ "name": "Yellow furballs" }
+
+
+#Querying the field
+GET /demar_pm_itsayt2/my_type/_search
+{
+  "query": 
+  {
+    "match": {
+      "name": "brown fo"
+    }
+  }
+}
+
+
+GET /demar_pm_itsayt2/_analyze
+{
+  "analyzer" : "autocomplete_analyzer",
+  "field": "name", 
+  "text": "brown fo"
+}
+
+GET /demar_pm_itsayt2/my_type/_validate/query?explain
+{
+  "query": 
+  {
+    "match": {
+      "name": "brown fo"
+    }
+  }
+}
+
+
+GET /demar_pm_itsayt2/my_type/_validate/query?explain
+{
+  "query": 
+  {
+    "match": {
+      "name": {
+        "query": "brown fo",
+        "analyzer" : "standard"
+      }
+    }
+  }
+}
+
+GET /demar_pm_itsayt2/my_type/_search
+{
+  "query": 
+  {
+    "match": {
+      "name": {
+        "query": "brown fo",
+        "analyzer" : "standard"
+      }
+    }
+  }
+}
+
+## CREATE NEW INDEX
+##############################
+## 17_3_demar_pm_qtsayt3.sh ##
+##############################
+
+DELETE /demar_pm_itsayt3
+
+
+PUT  /demar_pm_itsayt3
+{
+  "settings": 
+  {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+    , "analysis": 
+    {
+      "filter": 
+      {
+        "autocomplete_filter" : 
+        {
+          "type" : "edge_ngram",
+          "min_gram" : 1,
+          "max_gram" : 20
+        }
+      },
+      "analyzer": 
+      {
+        "autocomplete_analyzer" : 
+        {
+          "type" : "custom",
+          "tokenizer" : "standard",
+          "filter" : ["lowercase","autocomplete_filter"]
+        }
+      }
+    }
+  },
+  "mappings": 
+  {
+    "my_type" : 
+    {
+      "properties": 
+      {
+        "name" :
+        {
+          "type": "text",
+          "analyzer": "autocomplete_analyzer", 
+          "search_analyzer": "standard"
+        }
+      }
+    }
+    
+  }  
+}
+
+
+POST /demar_pm_itsayt3/my_type/_bulk
+{ "index": { "_id": 1 }}
+{ "name": "Brown foxes" }
+{ "index": { "_id": 2 }}
+{ "name": "Yellow furballs" }
+
+
+POST /demar_pm_itsayt3/my_type/_validate/query?explain
+{
+  "query" : {
+    "match_phrase_prefix": {
+      "name": {
+        "query": "brown fo"
+      }
+    }
+  }
+}
+
+
+POST /demar_pm_itsayt3/_search
+{
+  "query" : {
+    "match_phrase_prefix": {
+      "name": {
+        "query": "brown fo"
+      }
+    }
+  }
+}
+
+
+POST /demar_pm_itsayt3/_search
+{
+  "query" : {
+    "match_phrase_prefix": {
+      "name": {
+        "query": "brown fo"
+      }
+    }
+  }
+}

@@ -1,0 +1,77 @@
+curl -XDELETE "http://localhost:9200/demar_5_mqs"
+
+curl -XPUT "http://localhost:9200/demar_5_mqs" -H 'Content-Type: application/json' -d'
+{
+  "settings": 
+  {
+    "number_of_replicas": 0,
+    "number_of_shards": 1
+  },
+  "mappings": 
+  {
+    "books" : 
+    {
+      "properties": 
+      {
+        "title" : {"type": "text"},
+        "author" : {"type": "text"},
+        "translator" : {"type": "text"}
+      }
+    }
+  }
+}'
+
+
+# TEMPLATE
+###############
+# PUT /{index}
+# {
+#   BODY  
+# }
+###############
+
+#PUT /{index}/{type}/{id}
+#{
+#   "FIELD_NAME": "FIELD_VALUE",
+#   ...
+#}
+
+
+curl -XPUT "http://localhost:9200/demar_5_mqs/books/1" -H 'Content-Type: application/json' -d'
+{
+   "title": "War and Peace",
+   "author": "Leo Tolstoy",
+   "translator": "Constance Garnett"
+}'
+
+curl -XPUT "http://localhost:9200/demar_5_mqs/books/2" -H 'Content-Type: application/json' -d'
+{
+   "title": "War and Peace",
+   "author": "Leo Tolstoy",
+   "translator": "Louise Maude"
+}'
+
+curl -XPUT "http://localhost:9200/demar_5_mqs/books/3" -H 'Content-Type: application/json' -d'
+{
+   "title": "War and Peace",
+   "author": "Leo Tolstoy",
+   "translator": "Vladimir Ilitch Oulianov"
+}'
+
+curl -XPUT "http://localhost:9200/demar_5_mqs/books/4" -H 'Content-Type: application/json' -d'
+{
+   "title": "Le vieil homme et la mer",
+   "author": "Ernest Hemingway",
+   "translator": "John the translator"
+}'
+
+
+curl -XPOST "http://localhost:9200/demar_5_mqs/books/_search?explain" -H 'Content-Type: application/json' -d'
+{
+   "query": 
+   {
+     "match": {
+       "translator": "vladimir"
+     }
+   }
+}'
