@@ -1,4 +1,6 @@
-© ElasticSearch, the definitive guide, Clinton Gomerley and Zachary Tong, ISBN: 978-1-449-35854-9, Ed. Oreilly, 2015
+# © ElasticSearch, the definitive guide, Clinton Gomerley and Zachary Tong, ISBN: 978-1-449-35854-9, Ed. Oreilly, 2015
+
+# The book is a little bit old (not up to date with the last elastic versions). But it's core content is still relevant
 
 # APRES INSTALLATION #
 GET  /
