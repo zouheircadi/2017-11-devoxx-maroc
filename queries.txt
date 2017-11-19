@@ -1,3 +1,5 @@
+© ElasticSearch, the definitive guide, Clinton Gomerley and Zachary Tong, ISBN: 978-1-449-35854-9, Ed. Oreilly, 2015
+
 # APRES INSTALLATION #
 GET  /
 
@@ -7,10 +9,10 @@ GET  /
 
 
 
-################################
+###################################
 #######  4_demar_mqs.sh ###########
-###    INDEX AUTOCREATION   ###
-################################
+###    INDEX AUTOCREATION   #######
+###################################
 DELETE /demar_4_mqs
 
 PUT demar_4_mqs/books/1
